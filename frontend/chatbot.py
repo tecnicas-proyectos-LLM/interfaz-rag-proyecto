@@ -7,7 +7,7 @@ def chat_message(role, content):
         en la interfaz del chatbot cada vez
         que suceda una interacción
     """
-    st.chat_message( role ).write( content )
+    st.chat_message( role ).markdown( content )
 
 def settings_chatbot():
     """
@@ -15,6 +15,7 @@ def settings_chatbot():
         elementos necesarios para el funcionamiento de 
         la interfaz del chatbot con streamlit
     """
+    st.logo("https://valledellili.org/wp-content/uploads/2025/04/LOGO_FVL_2025.svg")
     # Agregando un título al chatbot
     st.title("Chatbot Fundación Valle del Lili")
 
