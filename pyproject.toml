@@ -8,5 +8,7 @@ dependencies = [
     "chromadb>=1.1.1",
     "langchain-ollama>=0.3.10",
     "ollama>=0.6.0",
+    "openai>=2.3.0",
+    "python-dotenv>=1.1.1",
     "streamlit>=1.50.0",
 ]
