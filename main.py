@@ -2,7 +2,8 @@
 # from models.local_model import model_local_process
 # from models.langchain_ollama_model import model_langchain_process
 # from models.api_model import model_api_process
-from models.langchain_azure_openAI_model import langchain_azureOpenAI_model
+# from models.langchain_azure_openAI_model import langchain_azureOpenAI_model
+from models.langchain_googleAI_mode import model_langchain_google_process
 from frontend.chatbot import init_chatbot
 
 def main():
@@ -10,7 +11,8 @@ def main():
     # init_chatbot( execute_model=model_langchain_process )
     # init_chatbot( execute_model=model_local_process )
     # init_chatbot( execute_model=model_api_process )
-    init_chatbot( execute_model=langchain_azureOpenAI_model )
+    # init_chatbot( execute_model=langchain_azureOpenAI_model )
+    init_chatbot( execute_model=model_langchain_google_process )
 
 if __name__ == "__main__":
     main()
