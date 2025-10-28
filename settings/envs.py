@@ -11,10 +11,12 @@ def get_envs():
         las variables de entorno del proyecto
     """
     object_envs = {
-        "api_key"   : os.getenv("AZURE_OPENAI_API_KEY"),
-        "endpoint"  : os.getenv("AZURE_OPENAI_ENDPOINT"),
-        "deployment": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        "version"   : os.getenv("AZURE_OPENAI_API_VERSION"),
+        "api_key"        : os.getenv("AZURE_OPENAI_API_KEY"),
+        "endpoint"       : os.getenv("AZURE_OPENAI_ENDPOINT"),
+        "deployment"     : os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        "version"        : os.getenv("AZURE_OPENAI_API_VERSION"),
+        "api_key_google" : os.getenv("GOOGLE_API_KEY"),
+        "google_model_ia": os.getenv("GOOGLE_MODEL_IA"),
     }
     
     return object_envs
