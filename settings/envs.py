@@ -17,6 +17,7 @@ def get_envs():
         "version"        : os.getenv("AZURE_OPENAI_API_VERSION"),
         "api_key_google" : os.getenv("GOOGLE_API_KEY"),
         "google_model_ia": os.getenv("GOOGLE_MODEL_IA"),
+        "postgres_url"   : os.getenv("POSTGRES_URL"),
     }
     
     return object_envs

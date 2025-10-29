@@ -14,3 +14,6 @@ wheels/
 test.py
 chroma.py
 data/
+
+postgres-db/
+pgadmin/

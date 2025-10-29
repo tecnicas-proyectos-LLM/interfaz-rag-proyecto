@@ -25,8 +25,9 @@ def chat_message(role, content):
     assistant_avatar = "frontend/assets/orbe_1.png"
 
     if role == "assistant":
-        message_box = st.chat_message( role, avatar=assistant_avatar )
-        type_effect( content, message_box, delay=0.005 )
+        #message_box = st.chat_message( role, avatar=assistant_avatar )
+        #type_effect( content, message_box, delay=0.005 )
+        st.chat_message( role, avatar=assistant_avatar ).markdown( content )
     else:
         st.chat_message( role ).markdown( content )
 
@@ -70,7 +71,7 @@ def states_chatbot():
     
     # Creando un estado para guardar el historial
     # de las conversaciones
-    if "messages" not in st.session_state:
+    if "messages_chatbot" not in st.session_state:
         st.session_state["messages_chatbot"] = []
 
     # Proceso para mostrar todo el historial de conversaciones
