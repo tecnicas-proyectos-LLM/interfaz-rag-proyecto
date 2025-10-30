@@ -4,6 +4,7 @@ from settings.envs import get_envs
 # Importando librerías langchain
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
+from langchain.agents.middleware import SummarizationMiddleware
 #from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.postgres import PostgresSaver 
 
@@ -13,13 +14,22 @@ from tools.tools import ModelTools
 # Cargando variables de entorno
 envs = get_envs()
 
+# -----------------------------------------------------------------------------
+# FUNCIONES PARA CONFIGURACIÓN
+# -----------------------------------------------------------------------------
 def get_setting_model():
     """
-        Esta función se encarga de cargar el modelo
-        con las configuraciones necesarias para
-        su funcionamiento
+        Esta función se encarga de cargar y configurar
+        dos modelos que se usarán en el proceso del RAG.
+
+        - Model RAG: es el modelo que se usará para aplicar
+        el proceso de RAG.
+
+        - Model summary: es el modelo que se usará para aplicar
+        la técnica summary con tal de resumir toda el hilo
+        conversacional que se lleva con el modelo. 
     """
-    model = init_chat_model(
+    model_RAG = init_chat_model(
         f"google_genai:{ envs["google_model_ia"] }",
         api_key=envs["api_key_google"],
         #temperature=0.5,
@@ -27,7 +37,15 @@ def get_setting_model():
         #max_tokens=1000,
     )
 
-    return model
+    model_summary = init_chat_model(
+        f"google_genai:{ envs["google_model_ia"] }",
+        api_key=envs["api_key_google"],
+    )
+
+    return {
+        "model_RAG"    : model_RAG,
+        "model_summary": model_summary,
+    }
 
 def normalize_content( message ):
     """
@@ -51,21 +69,34 @@ def normalize_content( message ):
     else:
         return "No hubo respuesta"
 
+# -----------------------------------------------------------------------------
+# PROCESO PRINCIPAL
+# -----------------------------------------------------------------------------
+
+# Obteniendo modelos LLM para todo el proceso
+models = get_setting_model()
+
 def agent_google_shortMemory( input ):
     """
         Esta función contiene toda la lógica
         para usar un modelo de Google como Gemini
         con LangChain agent.
     """
-    #TODO: falta implementar la estrategía summary para resumir las conversaciones guardadas
     with PostgresSaver.from_conn_string( envs["postgres_url"] ) as checkpointer:
         checkpointer.setup() # De forma automática se crean las tables en PostgresSQL
 
         # Instanciando objeto para el agente
         agent = create_agent(
-            model=get_setting_model(),
+            model=models["model_RAG"],
             tools=[ ModelTools.get_weather ],
             system_prompt="Tu eres un asistente",
+            middleware=[
+                SummarizationMiddleware(
+                    model=models["model_summary"],
+                    max_tokens_before_summary=4000,
+                    messages_to_keep=20,
+                )
+            ],
             checkpointer=checkpointer,
         )
 
@@ -78,3 +109,4 @@ def agent_google_shortMemory( input ):
         response_model = normalize_content( message=result["messages"][-1] )
 
         return response_model
+    

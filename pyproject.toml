@@ -5,11 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "bs4>=0.0.2",
     "chromadb>=1.1.1",
+    "langchain-chroma>=0.1.2",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.0.0",
+    "langchain-text-splitters>=1.0.0",
     "langchain[google-genai]>=1.0.2",
     "langgraph-checkpoint-postgres>=3.0.0",
-    "ollama>=0.6.0",
     "psycopg-binary>=3.2.12",
     "python-dotenv>=1.1.1",
     "streamlit>=1.50.0",
+    "uuid>=1.30",
 ]
