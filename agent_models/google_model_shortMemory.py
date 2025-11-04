@@ -5,11 +5,10 @@ from settings.envs import get_envs
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain.agents.middleware import SummarizationMiddleware
-#from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.postgres import PostgresSaver 
 
 # Importando Tools para el modelo
-from tools.tools import ModelTools
+from tools.tools import ModelTools, prompt_with_context
 
 # Cargando variables de entorno
 envs = get_envs()
@@ -88,14 +87,15 @@ def agent_google_shortMemory( input ):
         # Instanciando objeto para el agente
         agent = create_agent(
             model=models["model_RAG"],
-            tools=[ ModelTools.get_weather ],
+            tools=[ ModelTools.get_one ],
             system_prompt="Tu eres un asistente",
             middleware=[
                 SummarizationMiddleware(
                     model=models["model_summary"],
                     max_tokens_before_summary=4000,
                     messages_to_keep=20,
-                )
+                ),
+                prompt_with_context, # Añadiendo proceso para aplicar RAG
             ],
             checkpointer=checkpointer,
         )
