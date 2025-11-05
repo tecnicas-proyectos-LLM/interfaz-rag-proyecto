@@ -75,7 +75,7 @@ def normalize_content( message ):
 # Obteniendo modelos LLM para todo el proceso
 models = get_setting_model()
 
-def agent_google_shortMemory( input ):
+def agent_google_shortMemory( input, thread_id ):
     """
         Esta función contiene toda la lógica
         para usar un modelo de Google como Gemini
@@ -87,7 +87,7 @@ def agent_google_shortMemory( input ):
         # Instanciando objeto para el agente
         agent = create_agent(
             model=models["model_RAG"],
-            tools=[ ModelTools.get_one ],
+            tools=[ ModelTools.get_pending_appointments ],
             system_prompt="Tu eres un asistente",
             middleware=[
                 SummarizationMiddleware(
@@ -95,14 +95,14 @@ def agent_google_shortMemory( input ):
                     max_tokens_before_summary=4000,
                     messages_to_keep=20,
                 ),
-                prompt_with_context, # Añadiendo proceso para aplicar RAG
+                #prompt_with_context, # Añadiendo proceso para aplicar RAG
             ],
             checkpointer=checkpointer,
         )
 
         result = agent.invoke(
             {"messages": [{ "role": "user", "content": f"{ input }" }]},
-            {"configurable": {"thread_id": "1"}},
+            {"configurable": {"thread_id": thread_id}},
         )
 
         # Tomando la última respuesta que corresponde al modelo

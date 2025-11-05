@@ -1,4 +1,6 @@
 # Importando librerías
+import json
+
 from langchain.agents.middleware import dynamic_prompt, ModelRequest
 from langchain.tools import tool
 from vectorDB.database import get_vector_resources
@@ -28,32 +30,58 @@ def prompt_with_context(request: ModelRequest) -> str:
 # ----------------------------------------------------------
 class ModelTools:
 
-    @staticmethod
     @tool
+    @staticmethod
     def get_one(city: str) -> str:
         """Get weather for a given city."""
         return f"It's always sunny in {city}!"
     
-    @staticmethod
     @tool
+    @staticmethod
     def get_two(city: str) -> str:
         """Get weather for a given city."""
         return f"It's always sunny in {city}!"
     
+    @tool(
+        "pending_appointments", 
+        description="Busca citas médicas pendientes de usuarios. Usalo cuando el usuario necesite consultar si tiene citas pendientes."
+    )
     @staticmethod
-    @tool
-    def get_three(city: str) -> str:
-        """Get weather for a given city."""
-        return f"It's always sunny in {city}!"
+    def get_pending_appointments(cedula: str) -> str:
+        """
+            Busca en el archivo JSON si el usuario o paciente
+            tiene citas médicas pendientes o programadas.
+            
+            Args:
+                cedula: número de identificación del usuario.
+        """
+
+        # Cargando archivo JSON donde está la información
+        with open("tools/data/pending_appointments.json", "r", encoding="utf-8") as file:
+            users = json.load( file )
+
+        for user in users:
+            if user["cedula"] == cedula:
+                citas = user.get("citas", [])
+
+                if len(citas) == 0:
+                    return f"El usuario: { user["nombre"] }, con la cédula: { cedula } no tiene citas."
+
+                return (
+                    f"El usuario: { user["nombre"] }, con la cédula: { cedula }"
+                    f"tiene las siguientes citas pendientes: { user["citas"] }"
+                )                
+
+        return "Usuario no encontrado en el sistema."
     
-    @staticmethod
     @tool
+    @staticmethod
     def get_four(city: str) -> str:
         """Get weather for a given city."""
         return f"It's always sunny in {city}!"
     
-    @staticmethod
     @tool
+    @staticmethod
     def get_five(city: str) -> str:
         """Get weather for a given city."""
         return f"It's always sunny in {city}!"
