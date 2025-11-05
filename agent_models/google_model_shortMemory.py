@@ -7,8 +7,9 @@ from langchain.chat_models import init_chat_model
 from langchain.agents.middleware import SummarizationMiddleware
 from langgraph.checkpoint.postgres import PostgresSaver 
 
-# Importando Tools para el modelo
+# Importando Tools y Prompt para el modelo
 from tools.tools import ModelTools, prompt_with_context
+from system_prompts.master_prompt import MASTER_PROMPT
 
 # Cargando variables de entorno
 envs = get_envs()
@@ -82,13 +83,19 @@ def agent_google_shortMemory( input, thread_id ):
         con LangChain agent.
     """
     with PostgresSaver.from_conn_string( envs["postgres_url"] ) as checkpointer:
-        checkpointer.setup() # De forma automática se crean las tables en PostgresSQL
+        checkpointer.setup() # De forma automática se crean las tablas en PostgresSQL
 
         # Instanciando objeto para el agente
         agent = create_agent(
             model=models["model_RAG"],
-            tools=[ ModelTools.get_pending_appointments ],
-            system_prompt="Tu eres un asistente",
+            tools=[ 
+                ModelTools.get_pending_appointments,
+                ModelTools.get_contacts_to_schedule,
+                ModelTools.get_laboratory_results,
+                ModelTools.get_vaccination_programs,
+                ModelTools.get_PQR,
+            ],
+            system_prompt=MASTER_PROMPT,
             middleware=[
                 SummarizationMiddleware(
                     model=models["model_summary"],

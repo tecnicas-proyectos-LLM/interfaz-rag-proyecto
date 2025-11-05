@@ -30,18 +30,21 @@ def prompt_with_context(request: ModelRequest) -> str:
 # ----------------------------------------------------------
 class ModelTools:
 
+    # Valentina
     @tool
     @staticmethod
-    def get_one(city: str) -> str:
-        """Get weather for a given city."""
-        return f"It's always sunny in {city}!"
+    def get_contacts_to_schedule() -> str:
+        """Colocar descripción aquí."""
+        return f"Contenido"
     
+    # Juan
     @tool
     @staticmethod
-    def get_two(city: str) -> str:
-        """Get weather for a given city."""
-        return f"It's always sunny in {city}!"
+    def get_PQR() -> str:
+        """Colocar descripción aquí."""
+        return f"Contenido"
     
+    # Mateo
     @tool(
         "pending_appointments", 
         description="Busca citas médicas pendientes de usuarios. Usalo cuando el usuario necesite consultar si tiene citas pendientes."
@@ -74,14 +77,16 @@ class ModelTools:
 
         return "Usuario no encontrado en el sistema."
     
+    # Sebastian
     @tool
     @staticmethod
-    def get_four(city: str) -> str:
-        """Get weather for a given city."""
-        return f"It's always sunny in {city}!"
+    def get_vaccination_programs() -> str:
+        """Colocar descripción aquí."""
+        return f"Contenido"
     
+    # Juan
     @tool
     @staticmethod
-    def get_five(city: str) -> str:
-        """Get weather for a given city."""
-        return f"It's always sunny in {city}!"
+    def get_laboratory_results() -> str:
+        """Colocar descripción aquí."""
+        return f"Contenido"
