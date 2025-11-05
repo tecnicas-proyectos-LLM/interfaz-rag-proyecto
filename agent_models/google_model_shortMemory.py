@@ -5,11 +5,10 @@ from settings.envs import get_envs
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain.agents.middleware import SummarizationMiddleware
-#from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.postgres import PostgresSaver 
 
 # Importando Tools para el modelo
-from tools.tools import ModelTools
+from tools.tools import ModelTools, prompt_with_context
 
 # Cargando variables de entorno
 envs = get_envs()
@@ -76,7 +75,7 @@ def normalize_content( message ):
 # Obteniendo modelos LLM para todo el proceso
 models = get_setting_model()
 
-def agent_google_shortMemory( input ):
+def agent_google_shortMemory( input, thread_id ):
     """
         Esta función contiene toda la lógica
         para usar un modelo de Google como Gemini
@@ -88,21 +87,22 @@ def agent_google_shortMemory( input ):
         # Instanciando objeto para el agente
         agent = create_agent(
             model=models["model_RAG"],
-            tools=[ ModelTools.get_weather ],
+            tools=[ ModelTools.get_pending_appointments ],
             system_prompt="Tu eres un asistente",
             middleware=[
                 SummarizationMiddleware(
                     model=models["model_summary"],
                     max_tokens_before_summary=4000,
                     messages_to_keep=20,
-                )
+                ),
+                #prompt_with_context, # Añadiendo proceso para aplicar RAG
             ],
             checkpointer=checkpointer,
         )
 
         result = agent.invoke(
             {"messages": [{ "role": "user", "content": f"{ input }" }]},
-            {"configurable": {"thread_id": "1"}},
+            {"configurable": {"thread_id": thread_id}},
         )
 
         # Tomando la última respuesta que corresponde al modelo

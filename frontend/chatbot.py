@@ -1,7 +1,11 @@
 # Importando framework streamlit
 import streamlit as st
+from helpers.uuid import generatorUUID 
+
 import base64
 import time
+
+from agent_models.loading import loading_chats
 
 def type_effect(content, message_box, delay=0.03):
     """
@@ -62,25 +66,42 @@ def settings_chatbot():
         unsafe_allow_html=True
     )
 
+    # Sidebar
+    with st.sidebar:
+        st.title("Opciones")
+        new_chat = st.button("Nuevo chat", icon="✨")
+
+        if new_chat: # Se activa cuando se da click al botón "nuevo chat"
+            init_new_chat()
+            st.rerun()
+
+        st.title("Chats")
+
+        history_chats = st.session_state["chats"]
+
+        if len( history_chats ) != 0:
+            for i, chat in enumerate( history_chats ):
+                if st.button(f"Messages chat {i+1}"):
+                    st.session_state["chat_messages"] = chat["messages"]
+                    st.session_state["thread_id"]     = chat["thread_id"]
+                    st.rerun()
+
 def states_chatbot():
     """
-        Esta función inicializa el estado para gestionar
-        todos los mensajes que sucedan entre el usuario
-        y el modelo
+        Función que inicializa estados para manejarlos
+        dentro del proceso de la aplicación.
     """
-    
-    # Creando un estado para guardar el historial
-    # de las conversaciones
-    if "messages_chatbot" not in st.session_state:
-        st.session_state["messages_chatbot"] = []
+    # Estado para guardar mensajes durante la interacción
+    if "chat_messages" not in st.session_state:
+        st.session_state["chat_messages"] = []
 
-    # Proceso para mostrar todo el historial de conversaciones
-    # en la interfaz del chatbot
-    for message in st.session_state["messages_chatbot"]:
-        role    = message["role"]
-        content = message["content"]
+    # Estado para guardar todos los chat creados
+    if "chats" not in st.session_state:
+        st.session_state["chats"] = []
 
-        chat_message(role, content)
+    # Estado del ID del hilo global
+    if "thread_id" not in st.session_state:
+        st.session_state["thread_id"] = generatorUUID()
 
 def init_messages_assistant():
     """
@@ -93,26 +114,56 @@ def init_messages_assistant():
         ¿Cómo puedo ayudarte hoy?
     """
 
-    if "chat_initialized" not in st.session_state:
-        chat_message( role='assistant', content=init_message )
-        
-        # Se coloca una bandera para que no renderice de nuevo el mensaje
-        st.session_state["chat_initialized"] = True
-        st.session_state["messages_chatbot"].append({
+    if len( st.session_state["chat_messages"] ) == 0:
+        st.session_state["chat_messages"].append({
             "role"   : "assistant",
             "content": init_message,
         })
+
+        chat_message( role='assistant', content=init_message )
+
+def init_new_chat():
+    """
+        Esta función ejecuta el proceso para
+        iniciar un nuevo chat con el modelo LLM.
+
+        previous_chat_messages: es un un arreglo que tiene
+        un conjunto de diccionarios con las conversaciones
+        entre el modelo y el usuario.
+    """
+    previous_chat_messages = st.session_state["chat_messages"]
+
+    # Se revisa que al menos haya más de dos mensajes en el chat 
+    if len(previous_chat_messages) > 1:
+        st.session_state["chats"].append({
+            "messages" : previous_chat_messages,
+            "thread_id": st.session_state["thread_id"]
+        })
+        st.session_state["chat_messages"] = []
+        st.session_state["thread_id"]     = generatorUUID()
+
+        init_messages_assistant()
 
 # -----------------------------------------------------------------
 # PROCESO PRINCIPAL
 # -----------------------------------------------------------------
 def init_chatbot( execute_model ):
-
-    # Estableciendo configuraciones principales
-    settings_chatbot()
+    """
+        Este proceso se ejecuta cada vez que se quiera
+        interactuar con el modelo.
+    """
     states_chatbot()
+    loading_chats( state=st.session_state )
+    settings_chatbot()
     init_messages_assistant()
-    
+
+    # Proceso para mostrar todo el historial de conversaciones en la interfaz del chatbot
+    for message in st.session_state["chat_messages"]:
+        role    = message["role"]
+        content = message["content"]
+
+        chat_message(role, content)
+
     # Entrada del usuario
     user_input = st.chat_input("Escribe tu consulta aquí...")
 
@@ -120,7 +171,7 @@ def init_chatbot( execute_model ):
         # ----------------------------------------------
         # Proceso para guardar entrada usuario en el estado
         # ----------------------------------------------
-        st.session_state["messages_chatbot"].append({
+        st.session_state["chat_messages"].append({
             "role"   : "user",
             "content": user_input,
         })
@@ -131,9 +182,9 @@ def init_chatbot( execute_model ):
         # Proceso para guardar resultado modelo en el estado
         # ----------------------------------------------
         with st.spinner("Espera un momento..."):
-            response = execute_model( input=user_input )
+            response = execute_model( input=user_input, thread_id=st.session_state["thread_id"] )
 
-        st.session_state["messages_chatbot"].append({
+        st.session_state["chat_messages"].append({
             "role"   : "assistant",
             "content": response,
         })
