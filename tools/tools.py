@@ -199,3 +199,5 @@ class ModelTools:
     def get_laboratory_results() -> str:
         """Colocar descripción aquí."""
         return f"Contenido"
+
+
