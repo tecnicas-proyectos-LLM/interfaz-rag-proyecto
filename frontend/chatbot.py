@@ -115,10 +115,10 @@ def init_messages_assistant():
     """
 
     if len( st.session_state["chat_messages"] ) == 0:
-        st.session_state["chat_messages"].append({
+        """ st.session_state["chat_messages"].append({
             "role"   : "assistant",
             "content": init_message,
-        })
+        }) """
 
         chat_message( role='assistant', content=init_message )
 
