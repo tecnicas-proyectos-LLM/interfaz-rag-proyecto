@@ -109,30 +109,22 @@ def prompt_with_context(request: ModelRequest) -> str:
     print(f"Contexto generado con {len(final_chunks)} chunks")
     return context_message
 
-# @dynamic_prompt
-# def prompt_with_context(request: ModelRequest) -> str:
-#     """Inject context into state messages."""
-#     last_query = request.state["messages"][-1].text
-#     # retrieved_chunks = resources["chroma"].similarity_search( last_query, k=5 )
-#     # retrieved_chunks = resources["chroma"].similarity_search_with_score(last_query, k=5)
-#     retrieved_chunks = resources["chroma"].max_marginal_relevance_search(
-#         query=last_query,
-#         k=K_PER_QUERY,
-#         fetch_k=15,  # Busca 15, devuelve K_PER_QUERY
-#         lambda_mult=0.6,  # 0.6 = balance entre relevancia y diversidad
-#     )
 
-#     # Uniendo cada chunks en un bloque de texto
-#     docs_content = "\n---\n".join( doc.page_content for doc in retrieved_chunks )
+def generar_contacto(area: str) -> str:
+    try:
+        with open("tools/data/contacto.json", "r", encoding="utf-8") as file:
+            data = json.load(file)
 
-#     print(docs_content)
-#     # Regresando información relevante para complementarse en el prompt
-#     context_message = f"""
-#         Información relevante recuperada:
-#         { docs_content }
-#     """
+        # El JSON tiene una lista con un diccionario
+        contactos = data[0]
+        print(contactos)
+        return contactos.get(area.lower(), "Área no encontrada. Visita la página principal de contacto.")
 
-#     return context_message
+    except FileNotFoundError:
+        return "Archivo de contactos no encontrado."
+    except Exception as e:
+        return f"Error al acceder a la información de contacto: {e}"
+
 
 # ----------------------------------------------------------
 # TOOLS
@@ -140,11 +132,25 @@ def prompt_with_context(request: ModelRequest) -> str:
 class ModelTools:
 
     # Valentina
-    @tool
+    @tool(
+        "get_contacts_to_schedule",
+    description = (
+        "Permite obtener información de contacto o enlaces de servicios clínicos "
+        "como agendamiento de citas, urgencias o laboratorio. "
+        "Usa esta herramienta cuando el usuario necesite saber cómo comunicarse "
+        "con un área específica del hospital o clínica."
+    )
+        )
     @staticmethod
-    def get_contacts_to_schedule() -> str:
-        """Colocar descripción aquí."""
-        return f"Contenido"
+    def get_contacts_to_schedule(area: str) -> str:
+        """
+        Busca información de contacto de acuerdo al área solicitada.
+        Args:
+            area: Nombre del área (por ejemplo: 'citas', 'urgencias', 'laboratorio').
+        Returns:
+            Enlace o número telefónico correspondiente a la sección solicitada.
+        """
+        return generar_contacto(area)
     
     # Juan
     @tool
@@ -152,7 +158,7 @@ class ModelTools:
     def get_PQR() -> str:
         """Colocar descripción aquí."""
         return f"Contenido"
-    
+
     # Mateo
     @tool(
         "pending_appointments", 
