@@ -33,7 +33,8 @@ def agent_google_shortMemory( input, thread_id ):
                 ModelTools.get_contacts_to_schedule,
                 ModelTools.get_laboratory_results,
                 ModelTools.get_vaccination_programs,
-                ModelTools.get_PQR,
+                ModelTools.create_pqrs,
+                ModelTools.get_pqrs_status,
             ],
             system_prompt=MASTER_PROMPT,
             middleware=[
