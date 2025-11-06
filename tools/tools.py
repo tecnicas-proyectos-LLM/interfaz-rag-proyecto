@@ -10,6 +10,7 @@ from datetime import datetime
 import uuid
 from typing import Optional
 from config.firestore_config import get_firestore_client
+from tools.formatters.lab_results_formatters import format_single_lab_result, format_multiple_lab_results
 
 # Obteniendo configuraciones del vector DB
 resources = get_vector_resources()
@@ -331,10 +332,86 @@ class ModelTools:
         return f"Contenido"
     
     # Juan
-    @tool
+    @tool(
+        "get_laboratory_results",
+        description="""
+        Consulta los resultados de exámenes de laboratorio clínico del paciente.
+        
+        Usa esta herramienta cuando el usuario quiera:
+        - Ver resultados de exámenes de laboratorio
+        - Consultar analisis clinicos
+        - Verificar si sus resultados están disponibles
+        - Conocer valores de exámenes específicos
+        
+        IMPORTANTE: Necesitas la cédula del paciente para consultar.
+        Si el usuario no la proporciona, pregunta amablemente.
+        """
+    )
     @staticmethod
-    def get_laboratory_results() -> str:
-        """Colocar descripción aquí."""
-        return f"Contenido"
+    def get_laboratory_results(
+        cedula: str,
+        orden_id: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None
+    ) -> str:
+        """
+        Consulta resultados de laboratorio del paciente en Firestore.
+        
+        Args:
+            cedula: Numero de identificación del paciente (obligatorio)
+            orden_id: ID especifico de una orden (opcional)
+            fecha_desde: Fecha inicio búsqueda formato YYYY-MM-DD (opcional)
+            fecha_hasta: Fecha fin búsqueda formato YYYY-MM-DD (opcional)
+        
+        Returns:
+            Resultados de laboratorio del paciente
+        """
+        
+        try:
+            db = get_firestore_client()
+            
+            # Si se proporciona orden_id especifica
+            if orden_id:
+                doc_ref = db.collection("laboratory_results").document(orden_id)
+                doc = doc_ref.get()
+                
+                if not doc.exists:
+                    return f"No se encontró ninguna orden con el ID: {orden_id}"
+                
+                data = doc.to_dict()
+                
+                # Verificar que la orden pertenece al paciente
+                if data.get("cedula") != cedula:
+                    return "El ID de orden proporcionado no corresponde a su cédula."
+                
+                return format_single_lab_result(data)
+            
+            # Buscar todas las ordenes del paciente
+            query = db.collection("laboratory_results").where("cedula", "==", cedula)
+            
+            # Aplicar filtros de fecha si se proporcionan
+            if fecha_desde:
+                fecha_desde_dt = datetime.strptime(fecha_desde, "%Y-%m-%d")
+                query = query.where("fecha_orden", ">=", fecha_desde_dt)
+            
+            if fecha_hasta:
+                fecha_hasta_dt = datetime.strptime(fecha_hasta, "%Y-%m-%d")
+                query = query.where("fecha_orden", "<=", fecha_hasta_dt)
+            
+            # Ordenar por fecha mas reciente
+            query = query.order_by("fecha_orden", direction="DESCENDING").limit(10)
+            
+            results = query.stream()
+            
+            # Convertir a lista
+            ordenes = [doc.to_dict() for doc in results]
+            
+            if not ordenes:
+                return f"No se encontraron resultados de laboratorio para la cédula: {cedula}"
+            
+            return format_multiple_lab_results(ordenes)
+            
+        except Exception as e:
+            return f"Error al consultar resultados de laboratorio: {str(e)}"
 
 
