@@ -25,17 +25,48 @@ def prompt_with_context(request: ModelRequest) -> str:
 
     return context_message
 
+
+def generar_contacto(area: str) -> str:
+    try:
+        with open("tools/data/contacto.json", "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        # El JSON tiene una lista con un diccionario
+        contactos = data[0]
+        print(contactos)
+        return contactos.get(area.lower(), "Área no encontrada. Visita la página principal de contacto.")
+
+    except FileNotFoundError:
+        return "Archivo de contactos no encontrado."
+    except Exception as e:
+        return f"Error al acceder a la información de contacto: {e}"
+
+
 # ----------------------------------------------------------
 # TOOLS
 # ----------------------------------------------------------
 class ModelTools:
 
     # Valentina
-    @tool
+    @tool(
+        "get_contacts_to_schedule",
+    description = (
+        "Permite obtener información de contacto o enlaces de servicios clínicos "
+        "como agendamiento de citas, urgencias o laboratorio. "
+        "Usa esta herramienta cuando el usuario necesite saber cómo comunicarse "
+        "con un área específica del hospital o clínica."
+    )
+        )
     @staticmethod
-    def get_contacts_to_schedule() -> str:
-        """Colocar descripción aquí."""
-        return f"Contenido"
+    def get_contacts_to_schedule(area: str) -> str:
+        """
+        Busca información de contacto de acuerdo al área solicitada.
+        Args:
+            area: Nombre del área (por ejemplo: 'citas', 'urgencias', 'laboratorio').
+        Returns:
+            Enlace o número telefónico correspondiente a la sección solicitada.
+        """
+        return generar_contacto(area)
     
     # Juan
     @tool
@@ -43,7 +74,7 @@ class ModelTools:
     def get_PQR() -> str:
         """Colocar descripción aquí."""
         return f"Contenido"
-    
+
     # Mateo
     @tool(
         "pending_appointments", 
@@ -90,3 +121,5 @@ class ModelTools:
     def get_laboratory_results() -> str:
         """Colocar descripción aquí."""
         return f"Contenido"
+
+
