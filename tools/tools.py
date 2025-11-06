@@ -6,6 +6,10 @@ from langchain.tools import tool
 from vectorDB.database import get_vector_resources
 from langchain_core.prompts import ChatPromptTemplate 
 from agent_models.model_config import models
+from datetime import datetime
+import uuid
+from typing import Optional
+from config.firestore_config import get_firestore_client
 
 # Obteniendo configuraciones del vector DB
 resources = get_vector_resources()
@@ -153,11 +157,138 @@ class ModelTools:
         return generar_contacto(area)
     
     # Juan
-    @tool
+    @tool(
+        "create_pqrs",
+        description="""
+        Crea un ticket PQRS (Petición, Queja, Reclamo o Sugerencia) para el usuario.
+        
+        Usa esta herramienta cuando el usuario quiera:
+        - Hacer una petición o solicitud
+        - Presentar una queja
+        - Registrar un reclamo
+        - Dar una sugerencia
+        
+        IMPORTANTE: Debes obtener TODOS los parámetros requeridos del usuario
+        a través de la conversación antes de llamar esta tool.
+        Si falta algún parámetro, pregunta al usuario en lenguaje natural.
+        """
+    )
     @staticmethod
-    def get_PQR() -> str:
-        """Colocar descripción aquí."""
-        return f"Contenido"
+    def create_pqrs(
+        tipo_solicitud: str,
+        asunto: str,
+        descripcion: str,
+        nombre_usuario: str,
+        cedula: str,
+        email: str,
+        telefono: Optional[str] = None,
+        categoria: Optional[str] = "General"
+    ) -> str:
+        """
+        Crea un nuevo ticket PQRS en Firestore.
+        
+        Args:
+            tipo_solicitud: Tipo de solicitud (Petición, Queja, Reclamo, Sugerencia)
+            asunto: Titulo o asunto breve del PQRS
+            descripcion: Descripción detallada del problema o solicitud
+            nombre_usuario: Nombre completo del usuario
+            cedula: Numero de identificación del usuario
+            email: Correo electrónico del usuario
+            telefono: Teléfono de contacto (opcional)
+            categoria: Categoría del PQRS (Medico, Administrativo, Facturación, etc.)
+        
+        Returns:
+            Mensaje con el ID del ticket creado
+        """
+        
+        try:
+            # Generar ID único del ticket
+            ticket_id = f"PQRS-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+            
+            # Preparar datos del PQRS
+            pqr_data = {
+                "ticket_id": ticket_id,
+                "tipo_solicitud": tipo_solicitud,
+                "asunto": asunto,
+                "descripcion": descripcion,
+                "nombre_usuario": nombre_usuario,
+                "cedula": cedula,
+                "email": email,
+                "telefono": telefono if telefono else "No proporcionado",
+                "categoria": categoria,
+                "estado": "En proceso",
+                "prioridad": "Media",
+                "fecha_creacion": datetime.now(),
+                "fecha_actualizacion": datetime.now(),
+                "comentarios": [],
+                "asignado_a": None
+            }
+            
+            # Guardar en Firestore
+            db = get_firestore_client()
+            doc_ref = db.collection("pqrs").document(ticket_id)
+            doc_ref.set(pqr_data)
+            
+            # Retornar respuesta exitosa
+            response = (
+                f"Su solicitud PQRS ha sido creada exitosamente.\n\n"
+                f"Detalles del ticket:\n"
+                f"- ID del Ticket: {ticket_id}\n"
+                f"- Tipo: {tipo_solicitud}\n"
+                f"- Asunto: {asunto}\n"
+                f"- Estado: En proceso\n"
+                f"- Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
+                f"Recibirá una notificación por correo electrónico a {email} con el seguimiento de su solicitud.\n\n"
+                f"Puede consultar el estado de su ticket en cualquier momento proporcionando el ID: {ticket_id}"
+            )
+            
+            return response
+            
+        except Exception as e:
+            return f"Error al crear el PQRS: {str(e)}. Por favor intente nuevamente o contacte al administrador."
+    
+    # Juan
+    @tool(
+        "get_pqr_status",
+        description="Consulta el estado actual de un ticket PQRS usando su ID."
+    )
+    @staticmethod
+    def get_pqrs_status(ticket_id: str) -> str:
+        """
+        Consulta el estado de un ticket PQRS en Firestore.
+        
+        Args:
+            ticket_id: ID del ticket PQRS a consultar
+            
+        Returns:
+            Información del estado del ticket
+        """
+        try:
+            # Consultar en Firestore
+            db = get_firestore_client()
+            doc_ref = db.collection("pqrs").document(ticket_id)
+            doc = doc_ref.get()
+            
+            if not doc.exists:
+                return f"No se encontró ningún ticket con el ID: {ticket_id}"
+            
+            data = doc.to_dict()
+            
+            response = (
+                f"Estado del Ticket {ticket_id}\n\n"
+                f"- Tipo: {data.get('tipo_solicitud')}\n"
+                f"- Asunto: {data.get('asunto')}\n"
+                f"- Estado: {data.get('estado')}\n"
+                f"- Prioridad: {data.get('prioridad')}\n"
+                f"- Fecha de creación: {data.get('fecha_creacion').strftime('%d/%m/%Y %H:%M')}\n"
+                f"- Categoría: {data.get('categoria')}\n\n"
+                f"Descripción:\n{data.get('descripcion')}"
+            )
+            
+            return response
+            
+        except Exception as e:
+            return f"Error al consultar el ticket: {str(e)}"
 
     # Mateo
     @tool(
