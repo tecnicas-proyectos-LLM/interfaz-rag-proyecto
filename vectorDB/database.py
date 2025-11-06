@@ -1,6 +1,11 @@
 # Importando librerías
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
+from vectorDB.constants import (
+    PERSIST_DIR,
+    COLLECTION_NAME,
+    OLLAMA_MODEL
+)
 
 def get_vector_resources():
     """
@@ -9,13 +14,17 @@ def get_vector_resources():
         usar en otros lados del proyecto.
     """
     model_embeddings = OllamaEmbeddings(
-        model="embeddinggemma",
+        model=OLLAMA_MODEL,
     )
 
     chroma_store = Chroma(
-        collection_name="example_collection",
+        collection_name=COLLECTION_NAME,
         embedding_function=model_embeddings,
-        persist_directory="./vectorDB/data"
+        persist_directory=PERSIST_DIR,
+        collection_metadata={
+            "hnsw:space": "cosine",
+            "hnsw:search_ef": 50
+        }
     )
 
     return {
