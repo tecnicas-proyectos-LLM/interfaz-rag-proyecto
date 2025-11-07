@@ -80,6 +80,10 @@ def agent_google_shortMemory( input, thread_id ):
         )
 
         # Tomando la última respuesta que corresponde al modelo
-        response_model = normalize_content( message=result["messages"][-1] )
+        message_result = result["messages"][-1] # Normalmente ai message
+        if message_result.content == "":
+            message_result = result["messages"][-2] # Tool message
+
+        response_model = normalize_content( message=message_result )
 
         return response_model
