@@ -44,7 +44,7 @@ QUERY_EXPANSION_PROMPT = ChatPromptTemplate.from_messages(
 @dynamic_prompt
 def prompt_with_context(request: ModelRequest) -> str:
     original_query = request.state["messages"][-1].text.strip()
-    
+
     # Query expansion
     query_expansion_chain = QUERY_EXPANSION_PROMPT | models["model_RAG"] | StrOutputParser()
     alternative_queries_str = query_expansion_chain.invoke({"query": original_query})
@@ -106,7 +106,7 @@ def prompt_with_context(request: ModelRequest) -> str:
         {docs_content}
     """
 
-    print(context_message)
+    # print(context_message)
     print(f"Contexto generado con {len(final_chunks)} chunks")
     return context_message
 

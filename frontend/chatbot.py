@@ -2,8 +2,7 @@
 import streamlit as st
 from helpers.uuid import generatorUUID 
 
-import base64
-
+from frontend.styled_components.css_orb import render_orb
 from system_prompts.master_prompt import MASTER_PROMPT
 from agent_models.loading import loading_chats
 from frontend.presentation_proyect import show_presentation
@@ -32,34 +31,14 @@ def settings_chatbot():
     # Se agrega un título e icono en la pestaña del navegador
     st.set_page_config(page_title="FVLia", page_icon="🤖")
 
-    with open("frontend/assets/orbe_1.png", "rb") as file:
-        data = base64.b64encode( file.read() ).decode( "utf-8" )
-
     if not st.session_state.get("presentacion_activa", False):
-        st.markdown(
-            f"""
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-            ">
-                <img src="data:image/png;base64,{data}" width="160" style="margin: 0;">
-                <p>
-                    ¡Hola! Soy FVLia, el asistente virtual de la Fundación Valle del Lili. 
-                    Te orientaré en todo lo que necesites sobre nuestros servicios y atención al cliente.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        render_orb()
 
     # Sidebar
     with st.sidebar:
 
         st.title("Presentación")
-        presentacion_btn = st.button("Ver presentación", icon="🧭")
+        presentacion_btn = st.button("Ver presentación", icon="🧭", width='stretch')
 
         # Control de estado de presentación
         if "presentacion_activa" not in st.session_state:
@@ -70,7 +49,7 @@ def settings_chatbot():
             st.rerun()
 
         st.title("Opciones")
-        new_chat = st.button("Nuevo chat", icon="✨")
+        new_chat = st.button("Nuevo chat", icon="✨", width='stretch')
 
         if new_chat: # Se activa cuando se da click al botón "nuevo chat"
             st.session_state["presentacion_activa"] = False  
@@ -83,7 +62,7 @@ def settings_chatbot():
 
         if len( history_chats ) != 0:
             for i, chat in enumerate( history_chats ):
-                if st.button(f"Messages chat {i+1}"):
+                if st.button(f"Messages chat {i+1}", icon="💬", width='stretch'):
                     st.session_state["presentacion_activa"] = False  
                     st.session_state["chat_messages"] = chat["messages"]
                     st.session_state["thread_id"]     = chat["thread_id"]
@@ -105,6 +84,10 @@ def states_chatbot():
     # Estado del ID del hilo global
     if "thread_id" not in st.session_state:
         st.session_state["thread_id"] = generatorUUID()
+
+    # Estado para indicar que el modelo esta respondiendo
+    if 'is_responding' not in st.session_state:
+        st.session_state['is_responding'] = False
 
 def init_messages_assistant():
     """
@@ -188,15 +171,37 @@ def init_chatbot( execute_model ):
         chat_message( role='user', content=user_input )
 
         # ----------------------------------------------
+        # Proceso para activar la animación y forzar el render
+        # ----------------------------------------------
+        st.session_state['is_responding'] = True
+
+        st.session_state['temp_input'] = user_input 
+        st.rerun() 
+
+
+    if 'temp_input' in st.session_state and st.session_state['temp_input']:
+        user_input = st.session_state['temp_input']
+        
+        # ----------------------------------------------
         # Proceso para guardar resultado modelo en el estado
         # ----------------------------------------------
         with st.spinner("Espera un momento..."):
+            # Aseguramos que el estado esté activo mientras el spinner corre
+            st.session_state['is_responding'] = True 
+            
             response = execute_model( input=user_input, thread_id=st.session_state["thread_id"] )
 
+        # Desactivar la animación
+        st.session_state['is_responding'] = False
+        del st.session_state['temp_input'] # Limpiamos la variable temporal
+        
         st.session_state["chat_messages"].append({
-            "role"   : "assistant",
+            "role" : "assistant",
             "content": response,
         })
 
         chat_message( role='assistant', content=response )
+        
+        # Forzar un último rerun para que el orbe se vea inactivo inmediatamente
+        st.rerun()
 
