@@ -8,7 +8,9 @@ from settings.envs import get_envs
 # Cargando variables de entorno
 envs = get_envs()
 
-# --- INICIO: Bloque para asegurar la existencia de la base de datos ---
+# ---------------------------------------------------------------------------------
+# PROCESO DE VERIFICACIÓN
+# ---------------------------------------------------------------------------------
 def ensure_db_exists():
     """Asegura que la base de datos exista antes de intentar usarla."""
     try:
@@ -34,6 +36,9 @@ def ensure_db_exists():
         else:
             raise
 
+# ---------------------------------------------------------------------------------
+# PROCESO DE PRINCIPAL DE CARGA
+# ---------------------------------------------------------------------------------
 def loading_chats( state ):
     """
         Esta función cargar los chats con 

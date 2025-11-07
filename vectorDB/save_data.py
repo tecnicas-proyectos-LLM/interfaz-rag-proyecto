@@ -23,7 +23,6 @@ from vectorDB.constants import (
     OLLAMA_MODEL
 )
 
-
 def save_progress(last_processed_index: int, total_documents: int):
     """Guarda el progreso actual en PROGRESS_FILE"""
     with open(PROGRESS_FILE, 'w', encoding='utf-8') as f:
@@ -33,14 +32,12 @@ def save_progress(last_processed_index: int, total_documents: int):
             'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
         }, f)
 
-
 def load_progress():
     """Carga último progreso guardado (si existe)"""
     if PROGRESS_FILE.exists():
         with open(PROGRESS_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {'last_processed_index': 0, 'total_documents': 0}
-
 
 def build_chroma_with_ollama():
     emb = OllamaEmbeddings(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL)
@@ -54,8 +51,6 @@ def build_chroma_with_ollama():
         }
     )
     return chroma_store
-
-
 
 def process_batch(documents: List[Document], uuids: List[str], chroma_db, batch_size: int = 64):
     """Procesa los documentos en batches y persiste tras cada batch.
@@ -88,7 +83,6 @@ def process_batch(documents: List[Document], uuids: List[str], chroma_db, batch_
     if PROGRESS_FILE.exists():
         PROGRESS_FILE.unlink()
     return True
-
 
 def vectorize_context_chunks():
     """Función principal: carga chunks, crea documentos y los almacena en Chroma usando Ollama."""
