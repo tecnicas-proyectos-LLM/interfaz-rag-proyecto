@@ -20,11 +20,17 @@ def get_setting_model():
     model_RAG = init_chat_model(
         f"google_genai:{ envs["google_model_ia"] }",
         api_key=envs["api_key_google"],
+        temperature=0.4,
+        timeout=20,
+        max_tokens=800,
     )
 
     model_summary = init_chat_model(
         f"google_genai:{ envs["google_model_ia"] }",
         api_key=envs["api_key_google"],
+        temperature=0.6,
+        timeout=15,
+        max_tokens=400,
     )
 
     return {

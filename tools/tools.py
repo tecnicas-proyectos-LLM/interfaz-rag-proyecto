@@ -24,18 +24,14 @@ Tu tarea es tomar una consulta de usuario y generar 3 consultas de búsqueda alt
 que sean semánticamente similares o que desglosen la pregunta original.
 El objetivo es encontrar documentos relevantes en una base de datos de una clínica.
 
-
 No respondas la pregunta. Solo genera las consultas.
 Separa cada consulta con un salto de línea.
-
 
 Consulta Original:
 {query}
 
-
 Consultas Alternativas:
 """
-
 
 # Template para generar consultas alternativas
 QUERY_EXPANSION_PROMPT = ChatPromptTemplate.from_messages(
@@ -114,6 +110,9 @@ def prompt_with_context(request: ModelRequest) -> str:
     print(f"Contexto generado con {len(final_chunks)} chunks")
     return context_message
 
+# ----------------------------------------------------------
+# TOOLS
+# ----------------------------------------------------------
 
 def generar_contacto(area: str) -> str:
     try:
@@ -130,10 +129,6 @@ def generar_contacto(area: str) -> str:
     except Exception as e:
         return f"Error al acceder a la información de contacto: {e}"
 
-
-# ----------------------------------------------------------
-# TOOLS
-# ----------------------------------------------------------
 class ModelTools:
 
     # Valentina
@@ -290,47 +285,7 @@ class ModelTools:
             
         except Exception as e:
             return f"Error al consultar el ticket: {str(e)}"
-
-    # Mateo
-    @tool(
-        "pending_appointments", 
-        description="Busca citas médicas pendientes de usuarios. Usalo cuando el usuario necesite consultar si tiene citas pendientes."
-    )
-    @staticmethod
-    def get_pending_appointments(cedula: str) -> str:
-        """
-            Busca en el archivo JSON si el usuario o paciente
-            tiene citas médicas pendientes o programadas.
-            
-            Args:
-                cedula: número de identificación del usuario.
-        """
-
-        # Cargando archivo JSON donde está la información
-        with open("tools/data/pending_appointments.json", "r", encoding="utf-8") as file:
-            users = json.load( file )
-
-        for user in users:
-            if user["cedula"] == cedula:
-                citas = user.get("citas", [])
-
-                if len(citas) == 0:
-                    return f"El usuario: { user["nombre"] }, con la cédula: { cedula } no tiene citas."
-
-                return (
-                    f"El usuario: { user["nombre"] }, con la cédula: { cedula }"
-                    f"tiene las siguientes citas pendientes: { user["citas"] }"
-                )                
-
-        return "Usuario no encontrado en el sistema."
-    
-    # Sebastian
-    @tool
-    @staticmethod
-    def get_vaccination_programs() -> str:
-        """Colocar descripción aquí."""
-        return f"Contenido"
-    
+ 
     # Juan
     @tool(
         "get_laboratory_results",
@@ -414,4 +369,76 @@ class ModelTools:
         except Exception as e:
             return f"Error al consultar resultados de laboratorio: {str(e)}"
 
+    # Mateo
+    @tool(
+        "pending_appointments", 
+        description="Busca citas médicas pendientes de usuarios. Usalo cuando el usuario necesite consultar si tiene citas pendientes."
+    )
+    @staticmethod
+    def get_pending_appointments(cedula: str) -> str:
+        """
+            Busca en el archivo JSON si el usuario o paciente
+            tiene citas médicas pendientes o programadas.
+            
+            Args:
+                cedula: número de identificación del usuario.
+        """
 
+        # Cargando archivo JSON donde está la información
+        with open("tools/data/pending_appointments.json", "r", encoding="utf-8") as file:
+            users = json.load( file )
+
+        for user in users:
+            if user["cedula"] == cedula:
+                citas = user.get("citas", [])
+
+                if len(citas) == 0:
+                    return f"El usuario: { user["nombre"] }, con la cédula: { cedula } no tiene citas."
+
+                return (
+                    f"El usuario: { user["nombre"] }, con la cédula: { cedula }"
+                    f"tiene las siguientes citas pendientes: { user["citas"] }"
+                )                
+
+        return "Usuario no encontrado en el sistema."
+    
+    # Sebastian
+    @tool
+    @staticmethod
+    def get_vaccination_programs() -> str:
+        """
+        Devuelve los esquemas de vacunación del Hospital Universitario Fundación Valle del Lili,
+        obtenidos desde 'tools/data/vacunacion.json'.
+        
+        Contiene información de vacunas, edades y dosis recomendadas para:
+        - Niños
+        - Mujeres embarazadas
+        - Adultos
+        - Adultos mayores
+        """
+        import json
+
+        try:
+            with open("tools/data/vacunacion.json", "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            formatted_groups = []
+            for grupo in data:
+                esquema_text = "\n\n".join(
+                    [
+                        f"**Etapa:** {item.get('etapa', 'N/A')}\n"
+                        f"**Protege de:** {', '.join(item.get('protege_de', []))}"
+                        + (f"\n**Dosis:** {', '.join(item.get('dosis', []))}" if 'dosis' in item else "")
+                        for item in grupo.get("esquema", [])
+                    ]
+                )
+                formatted_groups.append(f"### {grupo['grupo']}\n{esquema_text}")
+
+            return "\n\n".join(formatted_groups)
+
+        except FileNotFoundError:
+            return "No se encontró el archivo 'tools/data/vacunacion.json'. Verifica la ruta relativa."
+        except json.JSONDecodeError:
+            return "El archivo 'vacunacion.json' tiene un formato JSON inválido."
+        except Exception as e:
+            return f"Ocurrió un error al leer el archivo: {str(e)}"

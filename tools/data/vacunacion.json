@@ -1,0 +1,148 @@
+[
+  {
+    "grupo": "Niños",
+    "esquema": [
+      {
+        "etapa": "Recién nacido",
+        "protege_de": ["Tuberculosis B.C.G", "Hepatitis B"],
+        "dosis": ["Única", "Recién nacido"]
+      },
+      {
+        "etapa": "2 meses",
+        "protege_de": [
+          "Polio (IM)",
+          "Pentavalente o HEXAVALENTE",
+          "Hepatitis B",
+          "Haemophilus Influenzae tipo B",
+          "Difteria, Tétano, Tosferina (DPT)",
+          "Rotavirus",
+          "Neumococo"
+        ],
+        "dosis": ["1ra", "1ra", "1ra", "1ra"]
+      },
+      {
+        "etapa": "4 meses",
+        "protege_de": [
+          "Polio (IM)",
+          "Pentavalente o HEXAVALENTE",
+          "Hepatitis B",
+          "Haemophilus Influenzae tipo B",
+          "Difteria, Tétano, Tosferina (DPT)",
+          "Rotavirus",
+          "Neumococo"
+        ],
+        "dosis": ["2da", "2da", "2da", "2da"]
+      },
+      {
+        "etapa": "6 meses",
+        "protege_de": [
+          "Polio (IM)",
+          "Pentavalente o HEXAVALENTE",
+          "Hepatitis B",
+          "Haemophilus Influenzae tipo B",
+          "Difteria, Tétano, Tosferina (DPT)",
+          "Influenza",
+          "Rotavirus"
+        ],
+        "dosis": ["3ra", "3ra", "3ra", "3ra"]
+      },
+      {
+        "etapa": "7 meses",
+        "protege_de": ["Influenza"],
+        "dosis": ["2da"]
+      },
+      {
+        "etapa": "9 meses",
+        "protege_de": ["Meningococo"],
+        "dosis": ["1ra"]
+      },
+      {
+        "etapa": "12 meses",
+        "protege_de": [
+          "Sarampión, Rubeola, Paperas (SRP)",
+          "Varicela",
+          "Neumococo",
+          "Influenza",
+          "Hepatitis A"
+        ],
+        "dosis": ["1ra", "Refuerzo", "Anual", "Única"]
+      },
+      {
+        "etapa": "18 meses",
+        "protege_de": [
+          "Difteria, Tétano, Tosferina (DPT)",
+          "Polio (oral o IM)",
+          "Fiebre amarilla",
+          "Hepatitis A",
+          "Neumococo"
+        ],
+        "dosis": ["1er refuerzo", "1er refuerzo", "Dosis única", "Segunda dosis", "Refuerzo"]
+      },
+      {
+        "etapa": "5 años",
+        "protege_de": [
+          "Difteria, Tétano, Tosferina (DPT)",
+          "Sarampión, Rubeola, Paperas (SRP)",
+          "Varicela"
+        ],
+        "dosis": ["Segundo refuerzo", "Refuerzo", "Refuerzo"]
+      },
+      {
+        "etapa": "9 años",
+        "protege_de": ["Virus del Papiloma Humano (VPH)"],
+        "dosis": ["Primera", "Segunda", "Tercera"]
+      },
+      {
+        "etapa": "10 años",
+        "protege_de": ["Difteria, Tétano, Tosferina (DPT)"],
+        "dosis": ["Refuerzo"]
+      }
+    ]
+  },
+  {
+    "grupo": "Mujeres embarazadas",
+    "esquema": [
+      {
+        "etapa": "Embarazo",
+        "protege_de": [
+          "Influenza",
+          "Tétanos",
+          "TdaP (Difteria, Tétanos, Tosferina–Acelular)"
+        ]
+      }
+    ]
+  },
+  {
+    "grupo": "Adultos",
+    "esquema": [
+      {
+        "etapa": "Adultez general",
+        "protege_de": [
+          "Varicela",
+          "Influenza",
+          "Hepatitis A",
+          "Hepatitis B",
+          "Fiebre amarilla",
+          "Difteria",
+          "Tétanos",
+          "Tosferina–Acelular (TdaP)",
+          "Virus del Papiloma Humano (VPH)"
+        ]
+      }
+    ]
+  },
+  {
+    "grupo": "Adultos mayores (60 años o más)",
+    "esquema": [
+      {
+        "etapa": "Adulto mayor",
+        "protege_de": [
+          "Herpes Zóster",
+          "Neumococo",
+          "Influenza",
+          "TdaP (Difteria, Tétanos, Tosferina–Acelular)"
+        ]
+      }
+    ]
+  }
+]
