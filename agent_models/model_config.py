@@ -3,6 +3,8 @@ from langchain.chat_models import init_chat_model
 
 # Importando variables de entorno
 from settings.envs import get_envs
+
+# Importando variables de entorno
 envs = get_envs()
 
 def get_setting_model():

@@ -15,7 +15,33 @@ from agent_models.model_config import models
 envs = get_envs()
 
 # -----------------------------------------------------------------------------
-# FUNCIONES PARA CONFIGURACIÓN
+# FUNCIONES EXTRAS
+# -----------------------------------------------------------------------------
+def normalize_content( message ):
+    """
+        Gemini puede regresar respuestas de tipo texto, imágenes, entre otros.
+        Por esa razón es necesario organizar la información para que extraer
+        el contenido que se mostrará en pantalla. En este caso, sólo se
+        trabajará con texto.
+    """
+    content = message.content
+
+    # Si la respuesta es una lista
+    if isinstance( content, list ):
+        response = content[0]["text"]
+        return response
+    
+    # Si la respuesta es directamente una cadena
+    elif isinstance( content, str ):
+        return content
+    
+    # Si no hay respuesta del modelo
+    else:
+        return "No hubo respuesta"
+
+# -----------------------------------------------------------------------------
+# PROCESO PRINCIPAL
+# -----------------------------------------------------------------------------
 def agent_google_shortMemory( input, thread_id ):
     """
         Esta función contiene toda la lógica
@@ -57,29 +83,3 @@ def agent_google_shortMemory( input, thread_id ):
         response_model = normalize_content( message=result["messages"][-1] )
 
         return response_model
-
-def normalize_content( message ):
-    """
-        Gemini puede regresar respuestas de tipo texto, imágenes, entre otros.
-        Por esa razón es necesario organizar la información para que extraer
-        el contenido que se mostrará en pantalla. En este caso, sólo se
-        trabajará con texto.
-    """
-    content = message.content
-
-    # Si la respuesta es una lista
-    if isinstance( content, list ):
-        response = content[0]["text"]
-        return response
-    
-    # Si la respuesta es directamente una cadena
-    elif isinstance( content, str ):
-        return content
-    
-    # Si no hay respuesta del modelo
-    else:
-        return "No hubo respuesta"
-
-# -----------------------------------------------------------------------------
-# PROCESO PRINCIPAL
-# -----------------------------------------------------------------------------

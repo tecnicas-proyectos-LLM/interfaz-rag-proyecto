@@ -1,11 +1,7 @@
 # Importando librerías
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
-from vectorDB.constants import (
-    PERSIST_DIR,
-    COLLECTION_NAME,
-    OLLAMA_MODEL
-)
+from vectorDB.constants import ( PERSIST_DIR, COLLECTION_NAME, OLLAMA_MODEL )
 
 def get_vector_resources():
     """
