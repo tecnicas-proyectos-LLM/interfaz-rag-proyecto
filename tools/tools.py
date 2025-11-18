@@ -1,5 +1,6 @@
 # Importando librerías
 import json
+import uuid
 from langchain_core.output_parsers import StrOutputParser
 from langchain.agents.middleware import dynamic_prompt, ModelRequest
 from langchain.tools import tool
@@ -7,10 +8,12 @@ from vectorDB.database import get_vector_resources
 from langchain_core.prompts import ChatPromptTemplate 
 from agent_models.model_config import models
 from datetime import datetime
-import uuid
 from typing import Optional
 from config.firestore_config import get_firestore_client
 from tools.formatters.lab_results_formatters import format_single_lab_result, format_multiple_lab_results
+from tools.structured import (
+    PendingAppointmentsInput
+)
 
 # Obteniendo configuraciones del vector DB
 resources = get_vector_resources()
@@ -285,7 +288,7 @@ class ModelTools:
             
         except Exception as e:
             return f"Error al consultar el ticket: {str(e)}"
- 
+
     # Juan
     @tool(
         "get_laboratory_results",
@@ -371,17 +374,18 @@ class ModelTools:
 
     # Mateo
     @tool(
-        "pending_appointments", 
-        description="Busca citas médicas pendientes de usuarios. Usalo cuando el usuario necesite consultar si tiene citas pendientes."
+        "pending_appointments",
+        args_schema=PendingAppointmentsInput,
+        description="""
+            Busca citas médicas pendientes de usuarios. 
+            Usalo cuando el usuario necesite consultar si tiene citas pendientes.
+        """
     )
     @staticmethod
     def get_pending_appointments(cedula: str) -> str:
         """
             Busca en el archivo JSON si el usuario o paciente
             tiene citas médicas pendientes o programadas.
-            
-            Args:
-                cedula: número de identificación del usuario.
         """
 
         # Cargando archivo JSON donde está la información
@@ -393,12 +397,14 @@ class ModelTools:
                 citas = user.get("citas", [])
 
                 if len(citas) == 0:
-                    return f"El usuario: { user["nombre"] }, con la cédula: { cedula } no tiene citas."
+                    return f"El usuario: { user["nombre"] }, con la cédula: { cedula }, no tiene citas."
 
-                return (
-                    f"El usuario: { user["nombre"] }, con la cédula: { cedula }"
-                    f"tiene las siguientes citas pendientes: { user["citas"] }"
-                )                
+                return f"""
+                    El usuario: { user["nombre"] }, con la cédula: { cedula },
+                    tiene las siguientes citas pendientes o programadas: 
+                    
+                    { user["citas"] }
+                """          
 
         return "Usuario no encontrado en el sistema."
     
