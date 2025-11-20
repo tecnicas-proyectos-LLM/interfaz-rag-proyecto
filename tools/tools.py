@@ -409,7 +409,12 @@ class ModelTools:
         return "Usuario no encontrado en el sistema."
     
     # Sebastian
-    @tool
+    @tool(
+        "vaccination_programs",
+        description="""
+            Devuelve los esquemas de vacunación del Hospital
+        """
+    )
     @staticmethod
     def get_vaccination_programs() -> str:
         """
