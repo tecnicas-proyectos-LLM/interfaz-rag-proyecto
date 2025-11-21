@@ -13,7 +13,10 @@ from config.firestore_config import get_firestore_client
 from tools.formatters.lab_results_formatters import format_single_lab_result, format_multiple_lab_results
 from tools.structured import (
     PendingAppointmentsInput,
-    GetContactsInput
+    GetContactsInput,
+    CreatePqrSchema,
+    PqrStatusSchema,
+    LaboratoryResultsSchema
 )
 
 # Obteniendo configuraciones del vector DB
@@ -158,6 +161,7 @@ class ModelTools:
     # Juan
     @tool(
         "create_pqrs",
+        args_schema=CreatePqrSchema,
         description="""
         Crea un ticket PQRS (Petición, Queja, Reclamo o Sugerencia) para el usuario.
         
@@ -249,6 +253,7 @@ class ModelTools:
     # Juan
     @tool(
         "get_pqr_status",
+        args_schema=PqrStatusSchema,
         description="Consulta el estado actual de un ticket PQRS usando su ID."
     )
     @staticmethod
@@ -292,12 +297,13 @@ class ModelTools:
     # Juan
     @tool(
         "get_laboratory_results",
+        args_schema=LaboratoryResultsSchema,
         description="""
         Consulta los resultados de exámenes de laboratorio clínico del paciente.
         
         Usa esta herramienta cuando el usuario quiera:
         - Ver resultados de exámenes de laboratorio
-        - Consultar analisis clinicos
+        - Consultar análisis clínicos
         - Verificar si sus resultados están disponibles
         - Conocer valores de exámenes específicos
         
