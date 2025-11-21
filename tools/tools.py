@@ -118,43 +118,75 @@ def prompt_with_context(request: ModelRequest) -> str:
 # ----------------------------------------------------------
 
 def generar_contacto(area: str) -> str:
+    """
+    Retorna el contacto correspondiente al área indicada,
+    leyendo desde /tools/data/contacto.json.
+    """
     try:
         with open("tools/data/contacto.json", "r", encoding="utf-8") as file:
             data = json.load(file)
 
-        # El JSON tiene una lista con un diccionario
         contactos = data[0]
-        print(contactos)
-        return contactos.get(area.lower(), "Área no encontrada. Visita la página principal de contacto.")
+
+        if not isinstance(contactos, dict):
+            return "El formato del archivo de contactos es inválido."
+
+        contacto = contactos.get(area.lower())
+
+        if contacto:
+            return contacto
+        else:
+            return (
+                f"No encontré información para el área '{area}'. "
+                "Puedes visitar la página principal de contacto o preguntar por otra área."
+            )
 
     except FileNotFoundError:
-        return "Archivo de contactos no encontrado."
+        return (
+            "No pude acceder al archivo de contactos en este momento. "
+            "Inténtalo nuevamente o pregunta por otra área."
+        )
     except Exception as e:
-        return f"Error al acceder a la información de contacto: {e}"
+        return (
+            f"Ocurrió un error al procesar tu solicitud: {e}. "
+            "Puedes intentar con otro servicio o volver a preguntar."
+        )
+
 
 class ModelTools:
 
-    # Valentina
     @tool(
         "get_contacts_to_schedule",
-    description = (
-        "Permite obtener información de contacto o enlaces de servicios clínicos "
-        "como agendamiento de citas, urgencias o laboratorio. "
-        "Usa esta herramienta cuando el usuario necesite saber cómo comunicarse "
-        "con un área específica del hospital o clínica."
+        description=(
+            "Obtiene información de contacto, enlaces o canales de atención "
+            "de un área específica (ej. citas, urgencias, laboratorio). "
+            "Úsala cuando el usuario desee contactar un servicio clínico."
+        ),
+        args_schema={
+            "type": "object",
+            "properties": {
+                "area": {
+                    "type": "string",
+                    "description": (
+                        "Nombre del área médica o administrativa. "
+                        "Ejemplos: 'laboratorio', 'citas', 'urgencias', 'imagenología'."
+                    )
+                }
+            },
+            "required": ["area"]
+        }
     )
-        )
-    @staticmethod
-    def get_contacts_to_schedule(area: str) -> str:
+    def get_contacts_to_schedule(area: str):
         """
-        Busca información de contacto de acuerdo al área solicitada.
-        Args:
-            area: Nombre del área (por ejemplo: 'citas', 'urgencias', 'laboratorio').
-        Returns:
-            Enlace o número telefónico correspondiente a la sección solicitada.
+        Wrapper que llama a generar_contacto() y maneja errores.
         """
-        return generar_contacto(area)
-    
+        try:
+            return generar_contacto(area)
+        except Exception:
+            return (
+                "Hubo un error inesperado mientras buscaba la información. "
+                "Por favor, intenta nuevamente o solicita otro tipo de ayuda."
+            )
     # Juan
     @tool(
         "create_pqrs",
