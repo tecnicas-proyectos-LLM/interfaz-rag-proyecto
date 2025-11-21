@@ -12,7 +12,8 @@ from typing import Optional
 from config.firestore_config import get_firestore_client
 from tools.formatters.lab_results_formatters import format_single_lab_result, format_multiple_lab_results
 from tools.structured import (
-    PendingAppointmentsInput
+    PendingAppointmentsInput,
+    GetContactsInput
 )
 
 # Obteniendo configuraciones del vector DB
@@ -117,76 +118,46 @@ def prompt_with_context(request: ModelRequest) -> str:
 # TOOLS
 # ----------------------------------------------------------
 
-def generar_contacto(area: str) -> str:
-    """
-    Retorna el contacto correspondiente al área indicada,
-    leyendo desde /tools/data/contacto.json.
-    """
-    try:
-        with open("tools/data/contacto.json", "r", encoding="utf-8") as file:
-            data = json.load(file)
-
-        contactos = data[0]
-
-        if not isinstance(contactos, dict):
-            return "El formato del archivo de contactos es inválido."
-
-        contacto = contactos.get(area.lower())
-
-        if contacto:
-            return contacto
-        else:
-            return (
-                f"No encontré información para el área '{area}'. "
-                "Puedes visitar la página principal de contacto o preguntar por otra área."
-            )
-
-    except FileNotFoundError:
-        return (
-            "No pude acceder al archivo de contactos en este momento. "
-            "Inténtalo nuevamente o pregunta por otra área."
-        )
-    except Exception as e:
-        return (
-            f"Ocurrió un error al procesar tu solicitud: {e}. "
-            "Puedes intentar con otro servicio o volver a preguntar."
-        )
 
 
 class ModelTools:
-
+    #valentina
     @tool(
         "get_contacts_to_schedule",
-        description=(
-            "Obtiene información de contacto, enlaces o canales de atención "
-            "de un área específica (ej. citas, urgencias, laboratorio). "
-            "Úsala cuando el usuario desee contactar un servicio clínico."
-        ),
-        args_schema={
-            "type": "object",
-            "properties": {
-                "area": {
-                    "type": "string",
-                    "description": (
-                        "Nombre del área médica o administrativa. "
-                        "Ejemplos: 'laboratorio', 'citas', 'urgencias', 'imagenología'."
-                    )
-                }
-            },
-            "required": ["area"]
-        }
+        args_schema=GetContactsInput,
+        description="""
+            Busca la información de contacto del área especificada.
+            Úsalo cuando el usuario necesite contactar un área del hospital.
+        """
     )
-    def get_contacts_to_schedule(area: str):
+    @staticmethod
+    def get_contacts_to_schedule(area: str) -> str:
         """
-        Wrapper que llama a generar_contacto() y maneja errores.
+            Busca en el archivo JSON la información de contacto
+            del área solicitada.
         """
-        try:
-            return generar_contacto(area)
-        except Exception:
-            return (
-                "Hubo un error inesperado mientras buscaba la información. "
-                "Por favor, intenta nuevamente o solicita otro tipo de ayuda."
-            )
+
+        # Cargando archivo JSON donde están los contactos
+        with open("tools/data/contacto.json", "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        # Se espera que el JSON tenga esta estructura:
+        # [ { "citas": "...", "laboratorio": "...", ... } ]
+        contactos = data[0]
+
+        # Convertir área a minúsculas para más robustez
+        area = area.lower()
+
+        if area in contactos:
+            contacto = contactos[area]
+            return f"""
+                Información de contacto para el área '{area}':
+
+                {contacto}
+            """
+
+        return f"No se encontró información de contacto para el área '{area}'."
+
     # Juan
     @tool(
         "create_pqrs",
