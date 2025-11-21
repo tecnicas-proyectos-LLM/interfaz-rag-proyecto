@@ -117,9 +117,6 @@ def prompt_with_context(request: ModelRequest) -> str:
 # ----------------------------------------------------------
 # TOOLS
 # ----------------------------------------------------------
-
-
-
 class ModelTools:
     #valentina
     @tool(
