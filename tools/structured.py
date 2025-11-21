@@ -7,4 +7,10 @@ class PendingAppointmentsInput( BaseModel ):
         Entrada para las consultas de citas
         pendientes o programadas de un paciente
     """
-    cedula: str = Field( description="Número de identificación del paciente o usuario" )
+    cedula: str = Field( description="Número de identificación del paciente o usuario"
+                         )
+
+class GetContactsInput(BaseModel):
+    area: str = Field(
+        description="Nombre del área médica o administrativa (ej. citas, urgencias, laboratorio, imagenología)."
+    )
